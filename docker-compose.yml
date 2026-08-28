@@ -25,7 +25,7 @@ services:
       NEXT_TELEMETRY_DISABLED: "1"
     ports:
       - "3000:3000"
-    command: sh -c "node_modules/.bin/prisma db push && node server.js"
+    command: sh -c "node_modules/.bin/prisma db push && node prisma/seed.js && node server.js"
 
 volumes:
   postgres_data:
