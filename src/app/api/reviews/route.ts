@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   }
 
   const userId = auth.user.sub;
-  const { productId, rating, comment, imageUrl } = parsed.data;
+  const { productId, rating, comment, imageUrls } = parsed.data;
 
   const deliveredOrder = await prisma.order.findFirst({
     where: {
@@ -47,8 +47,8 @@ export async function POST(request: NextRequest) {
 
   const review = await prisma.review.upsert({
     where: { userId_productId: { userId, productId } },
-    update: { rating, comment, imageUrl },
-    create: { userId, productId, rating, comment, imageUrl }
+    update: { rating, comment, imageUrls },
+    create: { userId, productId, rating, comment, imageUrls: imageUrls ?? [] }
   });
 
   return NextResponse.json(review, { status: 201 });

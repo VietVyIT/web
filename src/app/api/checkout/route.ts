@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
   const result = await prisma.$transaction(async (tx) => {
     const cart = await tx.cart.findUnique({
       where: { userId },
-      include: { items: { include: { variant: true } } }
+      include: { items: { include: { variant: { include: { product: true } } } } }
     });
     if (!cart || cart.items.length === 0) {
       return { error: "Gio hang dang rong." };
@@ -114,6 +114,7 @@ export async function POST(request: NextRequest) {
 
     const order = await tx.order.create({
       data: {
+        orderCode: `ORD-${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000)}`,
         userId,
         addressId,
         paymentMethod,
@@ -125,6 +126,8 @@ export async function POST(request: NextRequest) {
         items: {
           create: cart.items.map((item) => ({
             variantId: item.variantId,
+            productName: item.variant.product.name,
+            variantName: [item.variant.color, item.variant.memory].filter(Boolean).join(' - ') || item.variant.sku,
             quantity: item.quantity,
             unitPrice: item.variant.salePrice ?? item.variant.listedPrice
           }))

@@ -27,6 +27,6 @@ export const reviewSchema = z.object({
   productId: z.string().cuid(),
   rating: z.number().int().min(1).max(5),
   comment: z.string().max(1000).optional(),
-  imageUrl: z.string().url().optional()
+  imageUrls: z.array(z.string().url()).optional()
 });
 
