@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ChevronRight, Search, ShieldCheck, AlertCircle } from 'lucide-react'
+import { ChevronRight, Search, ShieldCheck, AlertCircle, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
