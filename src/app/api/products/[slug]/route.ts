@@ -51,7 +51,7 @@ export async function GET(
       id: review.id,
       rating: review.rating,
       comment: review.comment,
-      imageUrl: review.imageUrl,
+      imageUrls: review.imageUrls,
       author: review.user.fullName,
       createdAt: review.createdAt
     }))
