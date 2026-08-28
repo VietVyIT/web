@@ -16,13 +16,18 @@ export function SiteHeader() {
   const cartItemCount = useCartStore((state) => state.getItemCount())
 
   useEffect(() => {
-    setUser(readUser())
+    const updateUser = () => setUser(readUser())
+    updateUser()
     
+    window.addEventListener('auth-change', updateUser)
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0)
     }
     window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('auth-change', updateUser)
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [])
 
   return (
@@ -66,12 +71,19 @@ export function SiteHeader() {
             <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
 
             {user ? (
-              <div className="hidden md:flex items-center gap-3">
-                <Link href="/account" className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-semibold text-sm">
+              <div className="flex items-center gap-2 md:gap-3">
+                {user.role === 'ADMIN' && (
+                  <Link href="/admin">
+                    <Button variant="outline" size="sm" className="hidden sm:inline-flex border-blue-600 text-blue-600 hover:bg-blue-50">
+                      Trang Admin
+                    </Button>
+                  </Link>
+                )}
+                <Link href="/account" className="flex items-center gap-2 hover:text-blue-600 transition-colors bg-slate-100 hover:bg-slate-200 py-1.5 px-3 rounded-full">
+                  <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-xs">
                     {user.fullName.charAt(0)}
                   </div>
-                  <span className="text-sm font-medium max-w-[100px] truncate">{user.fullName}</span>
+                  <span className="text-xs font-semibold max-w-[80px] sm:max-w-[120px] truncate">{user.fullName}</span>
                 </Link>
                 <button
                   type="button"
@@ -83,16 +95,16 @@ export function SiteHeader() {
                   }}
                   title="Đăng xuất"
                 >
-                  <LogOut className="w-5 h-5" />
+                  <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             ) : (
-              <div className="hidden md:flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Link href="/login">
-                  <Button variant="ghost" size="sm" className="hidden lg:flex">Đăng nhập</Button>
+                  <Button variant="ghost" size="sm">Đăng nhập</Button>
                 </Link>
                 <Link href="/register">
-                  <Button size="sm" className="rounded-full">Đăng ký</Button>
+                  <Button size="sm" className="rounded-full hidden sm:flex">Đăng ký</Button>
                 </Link>
               </div>
             )}

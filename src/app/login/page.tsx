@@ -32,7 +32,12 @@ export default function LoginPage() {
       return;
     }
     saveSession(payload.token, payload.user);
-    router.push("/products");
+    window.dispatchEvent(new Event('auth-change'));
+    if (payload.user.role === 'ADMIN' || payload.user.role === 'STAFF_SALES' || payload.user.role === 'STAFF_WAREHOUSE') {
+      router.push('/admin');
+    } else {
+      router.push('/account');
+    }
   };
 
   return (
