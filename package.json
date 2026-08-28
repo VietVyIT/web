@@ -17,7 +17,11 @@
     "next": "^15.4.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "lucide-react": "^0.300.0",
+    "zustand": "^4.4.7",
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
