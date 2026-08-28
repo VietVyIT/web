@@ -41,6 +41,8 @@ export function SiteHeader() {
       window.removeEventListener('auth-change', updateUser)
       window.removeEventListener('scroll', handleScroll)
     }
+  }, [])
+
   // Fetch live suggestions on query change
   useEffect(() => {
     if (!searchQuery.trim()) {
