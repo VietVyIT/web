@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Filter, Grid3X3, List as ListIcon, Search, ChevronDown, SlidersHorizontal, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,10 +35,16 @@ export default function ProductsPage() {
   // Mobile Filter Drawer
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
-  const loadProducts = async () => {
+  const searchParams = useSearchParams()
+
+  const loadProducts = async (currentKeyword?: string, currentCategory?: string) => {
     setLoading(true)
     const params = new URLSearchParams()
-    if (keyword) params.set('q', keyword)
+    const queryTerm = currentKeyword !== undefined ? currentKeyword : keyword
+    const catTerm = currentCategory !== undefined ? currentCategory : categoryFilter
+
+    if (queryTerm) params.set('q', queryTerm)
+    if (catTerm) params.set('category', catTerm)
     if (sort) params.set('sort', sort)
     if (priceRange[0]) params.set('minPrice', priceRange[0])
     if (priceRange[1]) params.set('maxPrice', priceRange[1])
@@ -58,8 +65,16 @@ export default function ProductsPage() {
   }
 
   useEffect(() => {
-    loadProducts()
-  }, [])
+    const qParam = searchParams.get('q') || ''
+    const catParam = searchParams.get('category') || ''
+    const sortParam = searchParams.get('sort') || 'newest'
+    
+    setKeyword(qParam)
+    setCategoryFilter(catParam)
+    setSort(sortParam)
+
+    loadProducts(qParam, catParam)
+  }, [searchParams])
 
   const brands = useMemo(() => Array.from(new Set(items.map((i) => i.brand))), [items])
   const categories = useMemo(() => Array.from(new Set(items.map((i) => i.category))), [items])
