@@ -110,6 +110,7 @@ model Product {
   category    Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   variants    ProductVariant[]
   reviews     Review[]
+  images      ProductImage[]
 
   @@index([name])
   @@index([modelCode])
@@ -130,6 +131,22 @@ model ProductVariant {
   cartItems      CartItem[]
   orderItems     OrderItem[]
   inventoryCodes InventorySerial[]
+  images         ProductImage[]
+
+  @@index([sku])
+}
+
+model ProductImage {
+  id           String          @id @default(cuid())
+  productId    String
+  variantId    String?
+  url          String
+  isThumbnail  Boolean         @default(false)
+  displayOrder Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  product      Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant      ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
 }
 
 model Cart {
@@ -172,6 +189,7 @@ model Voucher {
 
 model Order {
   id             String        @id @default(cuid())
+  orderCode      String        @unique
   userId         String
   addressId      String
   status         OrderStatus   @default(PENDING)
@@ -186,18 +204,23 @@ model Order {
   address        Address       @relation(fields: [addressId], references: [id], onDelete: Restrict)
   voucher        Voucher?      @relation(fields: [voucherId], references: [id], onDelete: SetNull)
   items          OrderItem[]
+
+  @@index([orderCode])
+  @@index([status])
 }
 
 model OrderItem {
-  id           String          @id @default(cuid())
+  id           String            @id @default(cuid())
   orderId      String
   variantId    String
+  productName  String
+  variantName  String
   quantity     Int
-  unitPrice    Decimal         @db.Decimal(12, 2)
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  order        Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  variant      ProductVariant  @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  unitPrice    Decimal           @db.Decimal(12, 2)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  order        Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant      ProductVariant    @relation(fields: [variantId], references: [id], onDelete: Restrict)
   serialCodes  InventorySerial[]
 }
 
@@ -213,20 +236,23 @@ model InventorySerial {
   variant     ProductVariant        @relation(fields: [variantId], references: [id], onDelete: Cascade)
   orderItem   OrderItem?            @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
   warranty    WarrantyRecord?
+
+  @@index([code])
+  @@index([imeiPhone])
 }
 
 model WarrantyRecord {
-  id             String   @id @default(cuid())
-  serialId       String   @unique
+  id             String          @id @default(cuid())
+  serialId       String          @unique
   customerId     String?
   startedAt      DateTime
   expiresAt      DateTime
   repairStatus   String?
   repairNote     String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   serial         InventorySerial @relation(fields: [serialId], references: [id], onDelete: Restrict)
-  customer       User?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customer       User?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
 }
 
 model Review {
@@ -235,7 +261,7 @@ model Review {
   productId   String
   rating      Int
   comment     String?
-  imageUrl    String?
+  imageUrls   String[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
@@ -245,13 +271,13 @@ model Review {
 }
 
 model PasswordResetOtp {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   userId     String
   code       String
   expiresAt  DateTime
   usedAt     DateTime?
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, expiresAt])
 }

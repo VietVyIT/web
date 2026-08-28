@@ -136,11 +136,32 @@ Sau khi chay:
 - Ban can dat `JWT_SECRET` manh o moi truong that.
 - Ban can tich hop dich vu email de gui OTP that (hien tai co `devOtp` trong moi truong non-production).
 
-## 6) Do phu yeu cau
+## 6) Cấu trúc Cơ sở Dữ liệu (Database Schema)
 
-Du an hien tai la **nen tang MVP ky thuat** de ban mo rong nhanh theo danh sach yeu cau lon:
+Cơ sở dữ liệu được thiết kế bám sát vào 7 yêu cầu chính:
 
-- Da co schema va endpoint cot loi cho catalog, don hang, voucher, bao hanh.
-- Da co coc xu ly ton kho khi checkout (`updateMany ... stock >= quantity`) de han che ban am kho khi dong thoi.
-- Chua tich hop day du cong thanh toan online (VNPAY, MoMo...) va OAuth Google (co the bo sung tiep tren khung nay).
+1. **Quản lý Người dùng (Auth & Access)**: `User` có Role (CUSTOMER, ADMIN...), liên kết với nhiều `Address` (có cờ `isDefault`).
+2. **Danh mục & Biến thể (Catalog & SKU)**: Hỗ trợ phân cấp cha-con (`Category.parentId`), tách biệt Model (`Product`) và SKU (`ProductVariant`). Có bảng `ProductImage` quản lý ảnh, đánh dấu cờ Thumbnail.
+3. **Thông số kỹ thuật động**: `Category` và `Product` lưu cấu hình linh hoạt qua cột `specs` (kiểu JSON).
+4. **Quản lý Kho & Thiết bị (Serial/IMEI)**: `InventorySerial` lưu từng con máy, gán trạng thái (Trong kho, Đã bán, Bảo hành). `WarrantyRecord` theo dõi lịch sử và kỳ hạn bảo hành.
+5. **Đơn hàng & Snapshot**: Khi đặt hàng, `OrderItem` chụp lại cứng (Snapshot) các trường `productName`, `variantName` và `unitPrice`. Mỗi máy xuất kho sẽ gán cụ thể `InventorySerial.orderItemId`.
+6. **Đánh giá (Reviews)**: Giới hạn quan hệ duy nhất (`@@unique([userId, productId])`), hỗ trợ lưu trữ mảng danh sách hình ảnh đánh giá (`imageUrls`).
+7. **Ràng buộc Toàn vẹn (Constraints)**: 
+   - ON DELETE CASCADE: Giỏ hàng, hình ảnh, mã OTP.
+   - ON DELETE RESTRICT: Tránh xóa sản phẩm, biến thể, địa chỉ nếu đã có đơn hàng dính dáng.
+   - Đánh chỉ mục Index cho các truy vấn nặng như SKU, Mã Order, Trạng thái, Số Serial/IMEI.
+
+*(Lưu ý: Để có các ràng buộc Check Constraints (như giá > 0, tồn kho >= 0) ở mức database engine thay vì chỉ ở code, bạn có thể tạo một raw migration file của Prisma bằng `npx prisma migrate dev --create-only` rồi thêm các lệnh `ALTER TABLE "..." ADD CONSTRAINT "..." CHECK (...);`)*
+
+## 7) Tài khoản Đăng nhập Demo
+
+Hệ thống đã được thiết kế phân quyền cứng với các Role chuẩn. Dưới đây là tài khoản và mật khẩu (đã hash bcrypt) gợi ý để bạn tạo qua Seed:
+
+### Khách hàng (Customer)
+- **Email**: khachhang@techstore.vn
+- **Password**: Khach@123
+
+### Quản trị viên (Admin)
+- **Email**: admin@techstore.vn
+- **Password**: Admin@123
 
