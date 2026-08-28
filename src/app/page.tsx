@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Smartphone, Laptop, Tablet, Headphones, Watch, Zap, ChevronRight, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -52,6 +52,24 @@ export default function HomePage() {
     fetchProducts()
   }, [])
 
+  // Scroll reveal logic
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('opacity-100', 'translate-y-0')
+          entry.target.classList.remove('opacity-0', 'translate-y-8')
+        }
+      })
+    }, { threshold: 0.1 })
+
+    document.querySelectorAll('.reveal-on-scroll').forEach((el) => {
+      observer.observe(el)
+    })
+
+    return () => observer.disconnect()
+  }, [])
+
   const categories = [
     { name: 'Điện thoại', icon: Smartphone, color: 'bg-blue-100 text-blue-600', href: '/products?category=dien-thoai' },
     { name: 'Laptop', icon: Laptop, color: 'bg-indigo-100 text-indigo-600', href: '/products?category=laptop' },
@@ -84,16 +102,21 @@ export default function HomePage() {
                 </Button>
               </Link>
               <Link href="/products?sort=new">
-                <Button variant="outline" size="lg" className="border-slate-500 text-white hover:bg-white/10 h-12 px-8">
+                <Button size="lg" className="bg-transparent border border-slate-500 text-white hover:bg-white/10 h-12 px-8">
                   Hàng Mới Về
                 </Button>
               </Link>
             </div>
           </div>
-          <div className="relative h-64 md:h-[400px] w-full flex items-center justify-center">
-            {/* Placeholder for Hero Image */}
-            <div className="relative w-full max-w-md aspect-square rounded-full bg-gradient-to-tr from-blue-500/20 to-purple-500/20 blur-3xl absolute inset-0 m-auto animate-pulse"></div>
-            <img src="https://placehold.co/600x400/png?text=Premium+Tech+Devices" alt="Hero" className="relative z-10 w-full object-contain transform hover:scale-105 transition-transform duration-700" />
+          <div className="relative h-64 md:h-[500px] w-full flex items-center justify-center">
+            {/* Big phone image */}
+            <div className="relative w-full max-w-sm aspect-[1/2] rounded-full bg-gradient-to-tr from-blue-500/20 to-purple-500/20 blur-3xl absolute inset-0 m-auto animate-pulse"></div>
+            <img 
+              src="https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?auto=format&fit=crop&q=80&w=800" 
+              alt="Premium Smartphone" 
+              className="relative z-10 w-[80%] h-[120%] md:w-full md:h-[130%] object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-700" 
+              style={{ filter: 'drop-shadow(0 25px 25px rgba(0,0,0,0.5))' }}
+            />
           </div>
         </div>
       </section>
@@ -101,7 +124,7 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-4 py-12 space-y-16">
         
         {/* Categories Section */}
-        <section>
+        <section className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-700 ease-out">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-slate-900">Danh Mục Sản Phẩm</h2>
           </div>
@@ -118,7 +141,7 @@ export default function HomePage() {
         </section>
 
         {/* Flash Sale Section */}
-        <section className="bg-gradient-to-r from-red-500 to-rose-600 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden">
+        <section className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-700 ease-out delay-100 bg-gradient-to-r from-red-500 to-rose-600 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
           <div className="flex flex-col md:flex-row items-center justify-between mb-8 relative z-10 gap-4">
             <div className="flex items-center gap-3">
@@ -168,7 +191,7 @@ export default function HomePage() {
         </section>
 
         {/* Best Sellers Section */}
-        <section>
+        <section className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-700 ease-out delay-200">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-slate-900">Sản Phẩm Bán Chạy</h2>
             <Link href="/products?sort=popular" className="flex items-center text-blue-600 font-medium hover:text-blue-700">
