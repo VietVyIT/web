@@ -3,7 +3,16 @@
 @tailwind utilities;
 
 body {
-  background-color: #f8fafc;
+  background-color: #f1f5f9;
   color: #0f172a;
 }
 
+input,
+select,
+textarea {
+  @apply rounded-md border border-slate-300 px-3 py-2 text-sm;
+}
+
+button {
+  @apply transition-colors;
+}
