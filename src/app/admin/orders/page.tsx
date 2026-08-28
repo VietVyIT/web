@@ -1,20 +1,58 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Filter, Eye, Edit, Truck, CheckCircle, XCircle } from 'lucide-react'
+import { Search, Filter, Eye, Truck, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
+
+interface OrderItem {
+  id: string
+  customer: string
+  phone: string
+  date: string
+  total: string
+  payment: string
+  status: 'pending' | 'packing' | 'shipping' | 'delivered' | 'cancelled'
+}
 
 export default function AdminOrdersPage() {
   const [activeTab, setActiveTab] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
 
-  const orders = [
-    { id: '#ORD-001', customer: 'Nguyễn Văn A', phone: '0901234567', date: '28/08/2026 14:30', total: '24.990.000 ₫', payment: 'COD', status: 'pending' },
-    { id: '#ORD-002', customer: 'Trần Thị B', phone: '0912345678', date: '28/08/2026 10:15', total: '12.490.000 ₫', payment: 'VNPAY', status: 'packing' },
-    { id: '#ORD-003', customer: 'Lê Văn C', phone: '0923456789', date: '27/08/2026 16:45', total: '3.500.000 ₫', payment: 'VietQR', status: 'shipping' },
-    { id: '#ORD-004', customer: 'Phạm Thị D', phone: '0934567890', date: '27/08/2026 09:20', total: '8.990.000 ₫', payment: 'MoMo', status: 'delivered' },
-    { id: '#ORD-005', customer: 'Hoàng Văn E', phone: '0945678901', date: '26/08/2026 11:10', total: '45.000.000 ₫', payment: 'COD', status: 'cancelled' },
-  ]
+  const [orders, setOrders] = useState<OrderItem[]>([
+    { id: '#ORD-001', customer: 'Nguyễn Văn A', phone: '0901234567', date: '28/08/2026 14:30', total: '33.490.000 ₫', payment: 'COD', status: 'pending' },
+    { id: '#ORD-002', customer: 'Trần Thị B', phone: '0912345678', date: '28/08/2026 10:15', total: '31.990.000 ₫', payment: 'VNPAY', status: 'packing' },
+    { id: '#ORD-003', customer: 'Lê Văn C', phone: '0923456789', date: '27/08/2026 16:45', total: '6.990.000 ₫', payment: 'VietQR', status: 'shipping' },
+    { id: '#ORD-004', customer: 'Phạm Thị D', phone: '0934567890', date: '27/08/2026 09:20', total: '27.490.000 ₫', payment: 'MoMo', status: 'delivered' },
+    { id: '#ORD-005', customer: 'Hoàng Văn E', phone: '0945678901', date: '26/08/2026 11:10', total: '46.990.000 ₫', payment: 'COD', status: 'cancelled' },
+  ])
+
+  // Confirm modal state
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    type?: 'danger' | 'primary' | 'warning'
+    action?: () => void
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'primary'
+  })
+
+  const handleUpdateStatus = (orderId: string, newStatus: OrderItem['status'], statusName: string) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: `Xác nhận chuyển trạng thái đơn hàng`,
+      message: `Bạn có chắc chắn muốn chuyển đơn hàng ${orderId} sang trạng thái "${statusName}" không?`,
+      type: newStatus === 'cancelled' ? 'danger' : 'primary',
+      action: () => {
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o))
+      }
+    })
+  }
 
   const tabs = [
     { id: 'all', name: 'Tất cả đơn' },
@@ -36,7 +74,13 @@ export default function AdminOrdersPage() {
     }
   }
 
-  const filteredOrders = activeTab === 'all' ? orders : orders.filter(o => o.status === activeTab)
+  const filteredOrders = orders.filter(o => {
+    const matchesTab = activeTab === 'all' || o.status === activeTab
+    const matchesSearch = o.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          o.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          o.phone.includes(searchTerm)
+    return matchesTab && matchesSearch
+  })
 
   return (
     <div className="space-y-6">
@@ -67,12 +111,12 @@ export default function AdminOrdersPage() {
         <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
           <div className="relative w-full sm:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input placeholder="Tìm kiếm theo Mã ĐH, Tên KH, SĐT..." className="pl-9" />
-          </div>
-          <div className="flex gap-2 w-full sm:w-auto">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="w-4 h-4" /> Bộ lọc nâng cao
-            </Button>
+            <Input 
+              placeholder="Tìm kiếm theo Mã ĐH, Tên KH, SĐT..." 
+              className="pl-9" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
         </div>
 
@@ -114,17 +158,43 @@ export default function AdminOrdersPage() {
                   </td>
                   <td className="py-4 px-6 text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" className="h-8 px-2 text-blue-600 hover:bg-blue-50 border-blue-200">
-                        <Eye className="w-4 h-4 mr-1" /> Chi tiết
-                      </Button>
-                      
-                      {/* Action buttons based on status */}
                       {order.status === 'pending' && (
-                        <Button size="sm" className="h-8 px-3 bg-blue-600 hover:bg-blue-700">Duyệt</Button>
+                        <>
+                          <Button 
+                            size="sm" 
+                            className="h-8 px-3 bg-blue-600 hover:bg-blue-700"
+                            onClick={() => handleUpdateStatus(order.id, 'packing', 'Đang đóng gói')}
+                          >
+                            Duyệt đơn
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="danger" 
+                            className="h-8 px-2"
+                            onClick={() => handleUpdateStatus(order.id, 'cancelled', 'Đã hủy')}
+                          >
+                            Hủy
+                          </Button>
+                        </>
                       )}
+
                       {order.status === 'packing' && (
-                        <Button size="sm" className="h-8 px-3 bg-indigo-600 hover:bg-indigo-700">
-                           <Truck className="w-4 h-4 mr-1" /> Giao hàng
+                        <Button 
+                          size="sm" 
+                          className="h-8 px-3 bg-indigo-600 hover:bg-indigo-700"
+                          onClick={() => handleUpdateStatus(order.id, 'shipping', 'Đang giao hàng')}
+                        >
+                          <Truck className="w-4 h-4 mr-1" /> Giao hàng
+                        </Button>
+                      )}
+
+                      {order.status === 'shipping' && (
+                        <Button 
+                          size="sm" 
+                          className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700"
+                          onClick={() => handleUpdateStatus(order.id, 'delivered', 'Đã giao')}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" /> Hoàn thành
                         </Button>
                       )}
                     </div>
@@ -134,17 +204,20 @@ export default function AdminOrdersPage() {
             </tbody>
           </table>
         </div>
-        
-        {/* Pagination */}
-        <div className="p-4 border-t border-slate-200 flex items-center justify-between bg-white text-sm">
-          <p className="text-slate-500">Hiển thị <span className="font-medium text-slate-900">1-{filteredOrders.length}</span> trong số <span className="font-medium text-slate-900">{filteredOrders.length}</span> đơn hàng</p>
-          <div className="flex gap-1">
-            <Button variant="outline" size="sm" disabled>Trước</Button>
-            <Button variant="outline" size="sm" className="bg-blue-50 text-blue-600 border-blue-200">1</Button>
-            <Button variant="outline" size="sm">Tiếp</Button>
-          </div>
-        </div>
       </div>
+
+      {/* Confirm Modal */}
+      <ConfirmModal 
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        type={confirmConfig.type}
+        onConfirm={() => {
+          if (confirmConfig.action) confirmConfig.action()
+          setConfirmConfig({ ...confirmConfig, isOpen: false })
+        }}
+        onCancel={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+      />
     </div>
   )
 }
