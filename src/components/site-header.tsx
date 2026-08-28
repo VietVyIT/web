@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { clearSession, readUser, type SessionUser } from '@/lib/client-auth'
 import { Search, ShoppingBag, User as UserIcon, Menu, LogOut, X } from 'lucide-react'
