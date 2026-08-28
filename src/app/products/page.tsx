@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Filter, Grid3X3, List as ListIcon, Search, ChevronDown, SlidersHorizontal, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,7 @@ interface ProductItem {
   variants: Array<{ effectivePrice: number; stock: number }>
 }
 
-export default function ProductsPage() {
+function ProductsContent() {
   const [items, setItems] = useState<ProductItem[]>([])
   const [keyword, setKeyword] = useState('')
   const [sort, setSort] = useState('newest')
@@ -326,5 +326,13 @@ export default function ProductsPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-20 text-center text-slate-500">Đang tải sản phẩm...</div>}>
+      <ProductsContent />
+    </Suspense>
   )
 }
