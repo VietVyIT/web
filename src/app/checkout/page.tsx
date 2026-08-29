@@ -1,11 +1,80 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronRight, CreditCard, MapPin, Ticket, Truck, QrCode, Copy, Check, X, ShieldCheck, Sparkles, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useCartStore } from '@/store/cartStore'
+
+interface Ward {
+  code: number | string
+  name: string
+}
+
+interface District {
+  code: number | string
+  name: string
+  wards?: Ward[]
+}
+
+interface Province {
+  code: number | string
+  name: string
+  districts?: District[]
+}
+
+// Fallback provinces dataset in case network API is blocked
+const FALLBACK_PROVINCES: Province[] = [
+  {
+    code: '79',
+    name: 'Thành phố Hồ Chí Minh',
+    districts: [
+      {
+        code: '760',
+        name: 'Quận 1',
+        wards: [{ code: '26734', name: 'Phường Bến Nghé' }, { code: '26737', name: 'Phường Bến Thành' }, { code: '26740', name: 'Phường Tân Định' }]
+      },
+      {
+        code: '769',
+        name: 'Thành phố Thủ Đức',
+        wards: [{ code: '26866', name: 'Phường Thảo Điền' }, { code: '26869', name: 'Phường An Phú' }, { code: '26872', name: 'Phường Linh Trung' }]
+      },
+      {
+        code: '770',
+        name: 'Quận 7',
+        wards: [{ code: '27220', name: 'Phường Tân Phong' }, { code: '27223', name: 'Phường Phú Mỹ' }]
+      }
+    ]
+  },
+  {
+    code: '01',
+    name: 'Thành phố Hà Nội',
+    districts: [
+      {
+        code: '001',
+        name: 'Quận Ba Đình',
+        wards: [{ code: '00001', name: 'Phường Phúc Xá' }, { code: '00004', name: 'Phường Trúc Bạch' }]
+      },
+      {
+        code: '005',
+        name: 'Quận Cầu Giấy',
+        wards: [{ code: '00157', name: 'Phường Dịch Vọng' }, { code: '00160', name: 'Phường Dịch Vọng Hậu' }]
+      }
+    ]
+  },
+  {
+    code: '48',
+    name: 'Thành phố Đà Nẵng',
+    districts: [
+      {
+        code: '490',
+        name: 'Quận Hải Châu',
+        wards: [{ code: '20239', name: 'Phường Hải Châu I' }, { code: '20242', name: 'Phường Hải Châu II' }]
+      }
+    ]
+  }
+]
 
 export default function CheckoutPage() {
   const { items, getTotal, clearCart } = useCartStore()
@@ -13,12 +82,21 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    province: '',
-    district: '',
-    ward: '',
+    provinceCode: '',
+    provinceName: '',
+    districtCode: '',
+    districtName: '',
+    wardCode: '',
+    wardName: '',
     address: '',
     note: ''
   })
+
+  // Administrative Divisions API States
+  const [provinces, setProvinces] = useState<Province[]>(FALLBACK_PROVINCES)
+  const [districts, setDistricts] = useState<District[]>([])
+  const [wards, setWards] = useState<Ward[]>([])
+  const [loadingProvinces, setLoadingProvinces] = useState(true)
 
   const [paymentMethod, setPaymentMethod] = useState('vietqr')
   const [voucher, setVoucher] = useState('')
@@ -29,6 +107,68 @@ export default function CheckoutPage() {
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [orderCompleted, setOrderCompleted] = useState(false)
   const [orderId, setOrderId] = useState('')
+
+  // Fetch official VN Provinces API
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        const res = await fetch('https://provinces.open-api.vn/api/?depth=3')
+        if (res.ok) {
+          const data = await res.json()
+          if (Array.isArray(data) && data.length > 0) {
+            setProvinces(data)
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch open-api.vn, using fallback provinces:', e)
+      } finally {
+        setLoadingProvinces(false)
+      }
+    }
+    fetchProvinces()
+  }, [])
+
+  // Handle Province change
+  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const pCode = e.target.value
+    const selectedP = provinces.find(p => p.code.toString() === pCode)
+    setFormData(prev => ({
+      ...prev,
+      provinceCode: pCode,
+      provinceName: selectedP ? selectedP.name : '',
+      districtCode: '',
+      districtName: '',
+      wardCode: '',
+      wardName: ''
+    }))
+    setDistricts(selectedP?.districts || [])
+    setWards([])
+  }
+
+  // Handle District change
+  const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const dCode = e.target.value
+    const selectedD = districts.find(d => d.code.toString() === dCode)
+    setFormData(prev => ({
+      ...prev,
+      districtCode: dCode,
+      districtName: selectedD ? selectedD.name : '',
+      wardCode: '',
+      wardName: ''
+    }))
+    setWards(selectedD?.wards || [])
+  }
+
+  // Handle Ward change
+  const handleWardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const wCode = e.target.value
+    const selectedW = wards.find(w => w.code.toString() === wCode)
+    setFormData(prev => ({
+      ...prev,
+      wardCode: wCode,
+      wardName: selectedW ? selectedW.name : ''
+    }))
+  }
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN').format(price) + ' ₫'
@@ -62,6 +202,11 @@ export default function CheckoutPage() {
     e.preventDefault()
     if (items.length === 0) {
       alert('Giỏ hàng của bạn đang trống!')
+      return
+    }
+
+    if (formData.phone.length > 10) {
+      alert('Số điện thoại không được vượt quá 10 chữ số!')
       return
     }
 
@@ -104,6 +249,7 @@ export default function CheckoutPage() {
           <div className="bg-slate-50 p-4 rounded-2xl text-left text-sm space-y-2 border border-slate-100">
             <div className="flex justify-between"><span className="text-slate-500">Người nhận:</span> <span className="font-semibold text-slate-800">{formData.name || 'Khách hàng'}</span></div>
             <div className="flex justify-between"><span className="text-slate-500">Số điện thoại:</span> <span className="font-semibold text-slate-800">{formData.phone}</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">Địa chỉ:</span> <span className="font-semibold text-slate-800 line-clamp-1">{formData.address}, {formData.wardName}, {formData.districtName}, {formData.provinceName}</span></div>
             <div className="flex justify-between"><span className="text-slate-500">Phương thức:</span> <span className="font-semibold text-blue-600">{paymentMethod === 'vietqr' ? 'Chuyển khoản VietQR' : 'COD (Thanh toán khi nhận)'}</span></div>
             <div className="flex justify-between border-t border-slate-200 pt-2"><span className="text-slate-500">Tổng tiền:</span> <span className="font-bold text-slate-900">{formatPrice(total)}</span></div>
           </div>
@@ -150,37 +296,67 @@ export default function CheckoutPage() {
                     <Input required placeholder="Nhập họ và tên" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700">Số điện thoại *</label>
-                    <Input required type="tel" placeholder="Nhập số điện thoại" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                    <label className="text-sm font-medium text-slate-700">Số điện thoại (tối đa 10 số) *</label>
+                    <Input 
+                      required 
+                      type="tel" 
+                      maxLength={10} 
+                      placeholder="VD: 0901234567" 
+                      value={formData.phone} 
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '')
+                        if (val.length <= 10) setFormData({...formData, phone: val})
+                      }} 
+                    />
                   </div>
                 </div>
 
+                {/* Administrative Units API selects */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-slate-700">Tỉnh/Thành phố *</label>
-                    <select required className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600">
-                      <option value="">Chọn Tỉnh/Thành</option>
-                      <option value="hcm">TP. Hồ Chí Minh</option>
-                      <option value="hn">Hà Nội</option>
-                      <option value="dn">Đà Nẵng</option>
+                    <select 
+                      required 
+                      value={formData.provinceCode}
+                      onChange={handleProvinceChange}
+                      className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    >
+                      <option value="">{loadingProvinces ? 'Đang tải Tỉnh/Thành...' : 'Chọn Tỉnh/Thành'}</option>
+                      {provinces.map(p => (
+                        <option key={p.code} value={p.code}>{p.name}</option>
+                      ))}
                     </select>
                   </div>
+
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-slate-700">Quận/Huyện *</label>
-                    <select required className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <select 
+                      required 
+                      disabled={!formData.provinceCode}
+                      value={formData.districtCode}
+                      onChange={handleDistrictChange}
+                      className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-slate-100"
+                    >
                       <option value="">Chọn Quận/Huyện</option>
-                      <option value="q1">Quận 1</option>
-                      <option value="q3">Quận 3</option>
-                      <option value="q7">Quận 7</option>
-                      <option value="cg">Cầu Giấy</option>
+                      {districts.map(d => (
+                        <option key={d.code} value={d.code}>{d.name}</option>
+                      ))}
                     </select>
                   </div>
+
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-slate-700">Phường/Xã *</label>
-                    <select required className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <select 
+                      required 
+                      disabled={!formData.districtCode}
+                      value={formData.wardCode}
+                      onChange={handleWardChange}
+                      className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-slate-100"
+                    >
                       <option value="">Chọn Phường/Xã</option>
-                      <option value="bn">Phường Bến Nghé</option>
-                      <option value="bt">Phường Bến Thành</option>
+                      {wards.map(w => (
+                        <option key={w.code} value={w.code}>{w.name}</option>
+                      ))}
                     </select>
                   </div>
                 </div>

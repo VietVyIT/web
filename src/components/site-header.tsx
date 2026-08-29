@@ -87,7 +87,13 @@ export function SiteHeader() {
             <button className="lg:hidden p-2 -ml-2 text-slate-600">
               <Menu className="w-6 h-6" />
             </button>
-            <Link href="/" className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <Link 
+              href="/" 
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"
+            >
               TechStore
             </Link>
           </div>
@@ -102,24 +108,33 @@ export function SiteHeader() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => searchQuery.trim() && setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 250)}
                 className="w-full pl-10 bg-slate-100 border-transparent focus:bg-white rounded-full transition-all h-11"
               />
             </form>
 
             {/* Autocomplete Suggestions Popup */}
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-12 left-0 right-0 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div 
+                onMouseDown={(e) => e.preventDefault()}
+                className="absolute top-12 left-0 right-0 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+              >
                 <p className="text-xs font-semibold text-slate-400 px-3 py-1.5 uppercase tracking-wider">Gợi ý sản phẩm</p>
                 <div className="space-y-1">
                   {suggestions.map((item) => {
-                    const lowPrice = Math.min(...item.variants.map(v => v.effectivePrice))
+                    const lowPrice = item.variants && item.variants.length > 0 
+                      ? Math.min(...item.variants.map(v => v.effectivePrice))
+                      : 0
                     return (
-                      <Link
+                      <div
                         key={item.id}
-                        href={`/products/${item.slug}`}
-                        onClick={() => setShowSuggestions(false)}
-                        className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors group"
+                        onMouseDown={(e) => {
+                          e.preventDefault()
+                          setShowSuggestions(false)
+                          setIsMobileSearchOpen(false)
+                          router.push(`/products/${item.slug}`)
+                        }}
+                        className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer group"
                       >
                         <img 
                           src={item.image || 'https://placehold.co/100x100'} 
@@ -130,7 +145,7 @@ export function SiteHeader() {
                           <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">{item.name}</p>
                           <p className="text-xs text-blue-600 font-bold">{new Intl.NumberFormat('vi-VN').format(lowPrice)} ₫</p>
                         </div>
-                      </Link>
+                      </div>
                     )
                   })}
                 </div>
