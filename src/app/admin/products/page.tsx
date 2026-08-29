@@ -131,6 +131,10 @@ export default function AdminProductsPage() {
   // Image Moderation Check
   const validateImageSafety = (url: string): boolean => {
     if (!url.trim()) return true
+    
+    // Bỏ qua kiểm tra từ khóa nếu là chuỗi Base64 (vì base64 ngẫu nhiên rất dễ chứa chuỗi con trùng lặp)
+    if (url.startsWith('data:image/')) return true
+
     const lower = url.toLowerCase()
     
     // Check against inappropriate keywords
