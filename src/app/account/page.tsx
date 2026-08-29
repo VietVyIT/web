@@ -44,62 +44,81 @@ export default function AccountPage() {
           {/* Sidebar */}
           <div className="md:col-span-1">
             <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+import { Camera } from 'lucide-react'
+import { updateUserSession } from '@/lib/client-auth'
+
+// ... existing code ...
+
               <div className="flex items-center gap-4 mb-8 pb-8 border-b border-slate-100">
-                <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xl">
-                  {user.fullName.charAt(0)}
+                <div className="relative w-12 h-12 rounded-full overflow-hidden bg-blue-100 border border-slate-200 flex items-center justify-center font-bold text-xl text-blue-600 flex-shrink-0">
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
+                  ) : (
+                    user.fullName.charAt(0)
+                  )}
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-slate-500">Xin chào,</p>
                   <p className="font-bold text-slate-900 truncate">{user.fullName}</p>
                 </div>
               </div>
 
-              <nav className="space-y-2">
-                {tabs.map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-medium ${activeTab === tab.id ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}
-                  >
-                    <tab.icon className="w-5 h-5" />
-                    {tab.label}
-                  </button>
-                ))}
-                <button
-                  onClick={() => {
-                    localStorage.removeItem('session')
-                    window.location.href = '/'
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors text-sm font-medium mt-4"
-                >
-                  <LogOut className="w-5 h-5" />
-                  Đăng xuất
-                </button>
-              </nav>
-            </div>
-          </div>
+// ... down to profile section ...
 
-          {/* Main Content */}
-          <div className="md:col-span-3">
-            <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm min-h-[500px]">
-              
               {activeTab === 'profile' && (
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 mb-6">Thông tin tài khoản</h2>
-                  <div className="max-w-lg space-y-6">
-                    <div className="grid grid-cols-3 gap-4 border-b border-slate-100 pb-4">
-                      <div className="text-slate-500 font-medium">Họ và tên</div>
-                      <div className="col-span-2 text-slate-900">{user.fullName}</div>
+                  
+                  <div className="flex flex-col md:flex-row gap-8 items-start mb-8 pb-8 border-b border-slate-100">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="relative w-24 h-24 rounded-full overflow-hidden bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-3xl font-bold text-slate-400 group">
+                        {user.avatarUrl ? (
+                          <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
+                        ) : (
+                          user.fullName.charAt(0)
+                        )}
+                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer cursor-pointer">
+                          <Camera className="w-6 h-6 mb-1" />
+                          <span className="text-[10px] uppercase font-bold">Thay ảnh</span>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                const reader = new FileReader()
+                                reader.onload = (event) => {
+                                  const result = event.target?.result as string
+                                  if (result) {
+                                    updateUserSession({ avatarUrl: result })
+                                    setUser(prev => prev ? { ...prev, avatarUrl: result } : null)
+                                  }
+                                }
+                                reader.readAsDataURL(file)
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                      <p className="text-xs text-slate-500 text-center max-w-[120px]">Định dạng JPEG, PNG, JPG. Dung lượng tối đa 2MB.</p>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 border-b border-slate-100 pb-4">
-                      <div className="text-slate-500 font-medium">Email</div>
-                      <div className="col-span-2 text-slate-900">{user.email}</div>
+
+                    <div className="flex-1 w-full space-y-6">
+                      <div className="grid grid-cols-3 gap-4 border-b border-slate-100 pb-4">
+                        <div className="text-slate-500 font-medium">Họ và tên</div>
+                        <div className="col-span-2 text-slate-900">{user.fullName}</div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 border-b border-slate-100 pb-4">
+                        <div className="text-slate-500 font-medium">Email</div>
+                        <div className="col-span-2 text-slate-900">{user.email}</div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 border-b border-slate-100 pb-4">
+                        <div className="text-slate-500 font-medium">Số điện thoại</div>
+                        <div className="col-span-2 text-slate-900">0987654321</div>
+                      </div>
+                      <Button variant="outline">Cập nhật thông tin</Button>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 border-b border-slate-100 pb-4">
-                      <div className="text-slate-500 font-medium">Số điện thoại</div>
-                      <div className="col-span-2 text-slate-900">0987654321</div>
-                    </div>
-                    <Button variant="outline">Cập nhật thông tin</Button>
                   </div>
                 </div>
               )}

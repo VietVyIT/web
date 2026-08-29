@@ -170,32 +170,51 @@ export function SiteHeader() {
             <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
 
             {user ? (
-              <div className="flex items-center gap-2 md:gap-3">
-                {user.role === 'ADMIN' && (
-                  <Link href="/admin">
-                    <Button variant="outline" size="sm" className="hidden sm:inline-flex border-blue-600 text-blue-600 hover:bg-blue-50">
-                      Trang Admin
-                    </Button>
-                  </Link>
-                )}
-                <Link href="/account" className="flex items-center gap-2 hover:text-blue-600 transition-colors bg-slate-100 hover:bg-slate-200 py-1.5 px-3 rounded-full">
-                  <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-xs">
-                    {user.fullName.charAt(0)}
+              <div className="relative group flex items-center">
+                <Link href="/account" className="flex items-center gap-2 hover:text-blue-600 transition-colors bg-slate-100 hover:bg-slate-200 py-1.5 px-3 rounded-full cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm overflow-hidden border border-blue-200 flex-shrink-0">
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
+                    ) : (
+                      user.fullName.charAt(0)
+                    )}
                   </div>
                   <span className="text-xs font-semibold max-w-[80px] sm:max-w-[120px] truncate">{user.fullName}</span>
                 </Link>
-                <button
-                  type="button"
-                  className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                  onClick={() => {
-                    clearSession()
-                    setUser(null)
-                    window.location.href = '/'
-                  }}
-                  title="Đăng xuất"
-                >
-                  <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
-                </button>
+
+                {/* Dropdown Menu */}
+                <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden translate-y-2 group-hover:translate-y-0">
+                  <div className="p-4 border-b border-slate-50 bg-slate-50/50">
+                    <p className="font-bold text-slate-900 truncate">{user.fullName}</p>
+                    <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                  </div>
+                  <div className="p-2 space-y-1">
+                    {user.role === 'ADMIN' && (
+                      <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 font-medium hover:bg-blue-50 rounded-xl transition-colors">
+                        Trang Quản trị Admin
+                      </Link>
+                    )}
+                    <Link href="/account" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 font-medium hover:bg-slate-50 rounded-xl transition-colors">
+                      Tài khoản của tôi
+                    </Link>
+                    <Link href="/account?tab=orders" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 font-medium hover:bg-slate-50 rounded-xl transition-colors">
+                      Đơn hàng mua
+                    </Link>
+                  </div>
+                  <div className="p-2 border-t border-slate-100">
+                    <button
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 font-medium hover:bg-red-50 rounded-xl transition-colors"
+                      onClick={() => {
+                        clearSession()
+                        setUser(null)
+                        window.location.href = '/'
+                      }}
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Đăng xuất
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="flex items-center gap-2">

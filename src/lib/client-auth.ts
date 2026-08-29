@@ -5,7 +5,18 @@ export interface SessionUser {
   id: string;
   email: string;
   fullName: string;
+  avatarUrl?: string;
   role: "CUSTOMER" | "STAFF_SALES" | "STAFF_WAREHOUSE" | "ADMIN";
+}
+
+export function updateUserSession(updates: Partial<SessionUser>): void {
+  const user = readUser();
+  if (user) {
+    const updated = { ...user, ...updates };
+    localStorage.setItem(USER_KEY, JSON.stringify(updated));
+    // Trigger custom event so header can update
+    window.dispatchEvent(new Event('auth-change'));
+  }
 }
 
 export function readToken(): string | null {
