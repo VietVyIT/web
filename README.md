@@ -49,6 +49,12 @@ Sau khi chay:
 - Web: `http://localhost:3000`
 - Postgres: `localhost:5432`
 
+### B4. Dung va xoa du lieu (Neu can)
+
+```bash
+docker compose down -v
+```
+
 ## 3) Cau truc thu muc
 
 ```text

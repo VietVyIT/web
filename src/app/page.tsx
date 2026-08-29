@@ -73,11 +73,11 @@ export default function HomePage() {
   }, [])
 
   const categories = [
-    { name: 'Điện thoại', icon: Smartphone, color: 'bg-blue-100 text-blue-600', href: '/products?category=dien-thoai' },
-    { name: 'Laptop', icon: Laptop, color: 'bg-indigo-100 text-indigo-600', href: '/products?category=laptop' },
-    { name: 'Tablet', icon: Tablet, color: 'bg-purple-100 text-purple-600', href: '/products?category=tablet' },
-    { name: 'Tai nghe', icon: Headphones, color: 'bg-pink-100 text-pink-600', href: '/products?category=tai-nghe' },
-    { name: 'Smartwatch', icon: Watch, color: 'bg-rose-100 text-rose-600', href: '/products?category=smartwatch' },
+    { name: 'Điện thoại', icon: Smartphone, color: 'bg-blue-100 text-blue-600', href: '/products?category=Điện thoại' },
+    { name: 'Laptop', icon: Laptop, color: 'bg-indigo-100 text-indigo-600', href: '/products?category=Laptop' },
+    { name: 'Tablet', icon: Tablet, color: 'bg-purple-100 text-purple-600', href: '/products?category=Tablet' },
+    { name: 'Tai nghe', icon: Headphones, color: 'bg-pink-100 text-pink-600', href: '/products?category=Tai nghe' },
+    { name: 'Smartwatch', icon: Watch, color: 'bg-rose-100 text-rose-600', href: '/products?category=Smartwatch' },
   ]
 
   const formatPrice = (price: number) => {
@@ -103,17 +103,14 @@ export default function HomePage() {
                   Mua Ngay
                 </Button>
               </Link>
-              <Button 
-                onClick={() => setShowReveal(true)}
-                size="lg" 
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold h-12 px-8 shadow-lg shadow-blue-500/30 flex items-center gap-2"
-              >
-                <Sparkles className="w-5 h-5" />
-                Khám phá ngay
-              </Button>
+              <Link href="/products?sort=newest">
+                <Button size="lg" className="bg-transparent border border-slate-500 text-white hover:bg-white/10 h-12 px-8">
+                  Hàng Mới Về
+                </Button>
+              </Link>
             </div>
           </div>
-          <div className="relative h-64 md:h-[500px] w-full flex items-center justify-center">
+          <div className="relative h-64 md:h-[500px] w-full flex flex-col items-center justify-center">
             {/* Big phone image */}
             <div className="relative w-full max-w-sm aspect-[1/2] rounded-full bg-gradient-to-tr from-blue-500/20 to-purple-500/20 blur-3xl absolute inset-0 m-auto animate-pulse"></div>
             <img 
@@ -122,6 +119,17 @@ export default function HomePage() {
               className="relative z-10 w-[80%] h-[120%] md:w-full md:h-[130%] object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-700" 
               style={{ filter: 'drop-shadow(0 25px 25px rgba(0,0,0,0.5))' }}
             />
+            {/* Overlay Explore Button */}
+            <div className="absolute bottom-4 md:bottom-12 z-20 w-full flex justify-center">
+              <Button 
+                onClick={() => setShowReveal(true)}
+                size="lg" 
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold h-12 px-8 shadow-lg shadow-blue-500/50 flex items-center gap-2 animate-bounce"
+              >
+                <Sparkles className="w-5 h-5" />
+                Khám phá ngay
+              </Button>
+            </div>
           </div>
         </div>
       </section>
