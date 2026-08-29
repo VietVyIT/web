@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { User, Package, MapPin, Settings, LogOut, ChevronRight } from 'lucide-react'
-import { readUser, type SessionUser } from '@/lib/client-auth'
+import { User, Package, MapPin, Settings, LogOut, ChevronRight, Camera } from 'lucide-react'
+import { readUser, updateUserSession, type SessionUser } from '@/lib/client-auth'
 import { Button } from '@/components/ui/button'
 
 export default function AccountPage() {
@@ -44,11 +44,6 @@ export default function AccountPage() {
           {/* Sidebar */}
           <div className="md:col-span-1">
             <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
-import { Camera } from 'lucide-react'
-import { updateUserSession } from '@/lib/client-auth'
-
-// ... existing code ...
-
               <div className="flex items-center gap-4 mb-8 pb-8 border-b border-slate-100">
                 <div className="relative w-12 h-12 rounded-full overflow-hidden bg-blue-100 border border-slate-200 flex items-center justify-center font-bold text-xl text-blue-600 flex-shrink-0">
                   {user.avatarUrl ? (
@@ -63,12 +58,38 @@ import { updateUserSession } from '@/lib/client-auth'
                 </div>
               </div>
 
-// ... down to profile section ...
+              <nav className="space-y-2">
+                {tabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-medium ${activeTab === tab.id ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    <tab.icon className="w-5 h-5" />
+                    {tab.label}
+                  </button>
+                ))}
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('session')
+                    window.location.href = '/'
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors text-sm font-medium mt-4"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Đăng xuất
+                </button>
+              </nav>
+            </div>
+          </div>
 
+          {/* Main Content */}
+          <div className="md:col-span-3">
+            <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm min-h-[500px]">
+              
               {activeTab === 'profile' && (
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 mb-6">Thông tin tài khoản</h2>
-                  
                   <div className="flex flex-col md:flex-row gap-8 items-start mb-8 pb-8 border-b border-slate-100">
                     <div className="flex flex-col items-center gap-3">
                       <div className="relative w-24 h-24 rounded-full overflow-hidden bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-3xl font-bold text-slate-400 group">
@@ -77,7 +98,7 @@ import { updateUserSession } from '@/lib/client-auth'
                         ) : (
                           user.fullName.charAt(0)
                         )}
-                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer cursor-pointer">
+                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer">
                           <Camera className="w-6 h-6 mb-1" />
                           <span className="text-[10px] uppercase font-bold">Thay ảnh</span>
                           <input 
@@ -101,7 +122,7 @@ import { updateUserSession } from '@/lib/client-auth'
                           />
                         </label>
                       </div>
-                      <p className="text-xs text-slate-500 text-center max-w-[120px]">Định dạng JPEG, PNG, JPG. Dung lượng tối đa 2MB.</p>
+                      <p className="text-xs text-slate-500 text-center max-w-[120px]">Định dạng JPEG, PNG, JPG. Tối đa 2MB.</p>
                     </div>
 
                     <div className="flex-1 w-full space-y-6">
