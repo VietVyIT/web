@@ -28,6 +28,7 @@ export function SiteHeader() {
   const [suggestions, setSuggestions] = useState<SearchResultItem[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const cartItemCount = useCartStore((state) => state.getItemCount())
 
   useEffect(() => {
@@ -84,7 +85,10 @@ export function SiteHeader() {
           
           {/* Logo & Mobile Menu */}
           <div className="flex items-center gap-4 flex-shrink-0">
-            <button className="lg:hidden p-2 -ml-2 text-slate-600">
+            <button 
+              className="lg:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
               <Menu className="w-6 h-6" />
             </button>
             <Link 
@@ -170,7 +174,7 @@ export function SiteHeader() {
             <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
 
             {user ? (
-              <div className="relative group flex items-center">
+              <div className="relative group hidden sm:flex items-center">
                 <Link href="/account" className="flex items-center gap-2 hover:text-blue-600 transition-colors bg-slate-100 hover:bg-slate-200 py-1.5 px-3 rounded-full cursor-pointer">
                   <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm overflow-hidden border border-blue-200 flex-shrink-0">
                     {user.avatarUrl ? (
@@ -269,6 +273,70 @@ export function SiteHeader() {
         )}
       </header>
       
+      {/* Mobile Sidebar Menu */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => setIsMobileMenuOpen(false)}
+          ></div>
+          
+          {/* Sidebar */}
+          <div className="relative w-4/5 max-w-sm bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-left duration-300 z-50">
+            <div className="p-4 border-b flex items-center justify-between">
+              <span className="font-bold text-lg bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">TechStore</span>
+              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto py-4">
+              <div className="px-4 space-y-1 mb-6">
+                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 rounded-xl hover:bg-slate-50 font-medium text-slate-900">Trang chủ</Link>
+                <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 rounded-xl hover:bg-slate-50 font-medium text-slate-900">Tất cả Sản phẩm</Link>
+                <Link href="/warranty" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 rounded-xl hover:bg-slate-50 font-medium text-slate-900">Tra cứu bảo hành</Link>
+              </div>
+              
+              <div className="px-4 border-t border-slate-100 pt-6">
+                <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Tài khoản</p>
+                {user ? (
+                  <div className="space-y-1">
+                    <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg overflow-hidden flex-shrink-0 border border-blue-200">
+                        {user.avatarUrl ? <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" /> : user.fullName.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-900 text-sm truncate">{user.fullName}</p>
+                        <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                      </div>
+                    </Link>
+                    {user.role === 'ADMIN' && (
+                      <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 mt-2 text-sm text-blue-600 font-bold hover:bg-blue-50 rounded-xl transition-colors">Quản trị Admin</Link>
+                    )}
+                    <Link href="/account?tab=orders" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-slate-700 font-medium hover:bg-slate-50 rounded-xl transition-colors">Lịch sử mua hàng</Link>
+                    <button 
+                      onClick={() => {
+                        clearSession()
+                        setUser(null)
+                        window.location.href = '/'
+                      }} 
+                      className="w-full text-left px-4 py-3 text-sm text-red-600 font-bold hover:bg-red-50 rounded-xl flex items-center gap-2 transition-colors mt-2"
+                    >
+                      <LogOut className="w-4 h-4" /> Đăng xuất
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3 px-4 mt-4">
+                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}><Button className="w-full rounded-xl" variant="outline">Đăng nhập</Button></Link>
+                    <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}><Button className="w-full rounded-xl text-white bg-blue-600 hover:bg-blue-700">Đăng ký tài khoản</Button></Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   )
