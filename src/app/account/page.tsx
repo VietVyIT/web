@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 export default function AccountPage() {
   const [user, setUser] = useState<SessionUser | null>(null)
   const [activeTab, setActiveTab] = useState('profile')
+  const [showUpdateConfirm, setShowUpdateConfirm] = useState(false)
 
   useEffect(() => {
     const sessionUser = readUser()
@@ -138,7 +139,23 @@ export default function AccountPage() {
                         <div className="text-slate-500 font-medium">Số điện thoại</div>
                         <div className="col-span-2 text-slate-900">0987654321</div>
                       </div>
-                      <Button variant="outline">Cập nhật thông tin</Button>
+                      <Button variant="outline" onClick={() => setShowUpdateConfirm(true)}>Cập nhật thông tin</Button>
+                      
+                      {showUpdateConfirm && (
+                        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+                          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
+                            <h3 className="text-lg font-bold text-slate-900 mb-2">Xác nhận cập nhật</h3>
+                            <p className="text-slate-600 mb-6 text-sm">Bạn có chắc chắn muốn cập nhật và lưu lại các thay đổi về thông tin tài khoản không?</p>
+                            <div className="flex items-center justify-end gap-3">
+                              <Button variant="outline" onClick={() => setShowUpdateConfirm(false)}>Hủy bỏ</Button>
+                              <Button onClick={() => {
+                                setShowUpdateConfirm(false)
+                                alert('Đã lưu thông tin cập nhật thành công!')
+                              }}>Đồng ý lưu</Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
