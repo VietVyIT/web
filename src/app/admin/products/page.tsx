@@ -575,7 +575,7 @@ export default function AdminProductsPage() {
                   </div>
                 ) : (
                   <div className="text-center py-6 border border-dashed border-slate-300 rounded-xl bg-white text-slate-400 text-xs">
-                    Chưa có hình ảnh nào. Hãy thêm URL hoặc bấm "Tải Nhiều Tệp" để tải hình ảnh các góc độ khác nhau.
+                    Chưa có hình ảnh nào. Hãy thêm URL hoặc bấm &quot;Tải Nhiều Tệp&quot; để tải hình ảnh các góc độ khác nhau.
                   </div>
                 )}
               </div>
