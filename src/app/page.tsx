@@ -42,7 +42,7 @@ export default function HomePage() {
       try {
         const response = await fetch('/api/products')
         const payload = await response.json()
-        setItems(payload.slice(0, 8))
+        setItems(payload.slice(0, 12))
       } catch (e) {
         console.error(e)
       } finally {
