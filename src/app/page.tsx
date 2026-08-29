@@ -3,8 +3,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useEffect, useState, useRef } from 'react'
-import { Smartphone, Laptop, Tablet, Headphones, Watch, Zap, ChevronRight, Star } from 'lucide-react'
+import { Smartphone, Laptop, Tablet, Headphones, Watch, Zap, ChevronRight, Star, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { InteractivePhoneReveal } from '@/components/interactive-phone'
 
 // Types based on the previous schema and api design
 interface ProductItem {
@@ -21,6 +22,7 @@ interface ProductItem {
 export default function HomePage() {
   const [items, setItems] = useState<ProductItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [showReveal, setShowReveal] = useState(false)
 
   // Demo countdown for Flash Sale
   const [timeLeft, setTimeLeft] = useState({ hours: 12, minutes: 45, seconds: 30 })
@@ -95,17 +97,20 @@ export default function HomePage() {
             <p className="text-lg md:text-xl text-slate-300 max-w-lg">
               Sở hữu ngay những thiết bị công nghệ hàng đầu với ưu đãi độc quyền. Giao hàng tốc hành, bảo hành chính hãng.
             </p>
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-wrap gap-4 pt-4">
               <Link href="/products">
                 <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 font-semibold h-12 px-8">
                   Mua Ngay
                 </Button>
               </Link>
-              <Link href="/products?sort=new">
-                <Button size="lg" className="bg-transparent border border-slate-500 text-white hover:bg-white/10 h-12 px-8">
-                  Hàng Mới Về
-                </Button>
-              </Link>
+              <Button 
+                onClick={() => setShowReveal(true)}
+                size="lg" 
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold h-12 px-8 shadow-lg shadow-blue-500/30 flex items-center gap-2"
+              >
+                <Sparkles className="w-5 h-5" />
+                Khám phá ngay
+              </Button>
             </div>
           </div>
           <div className="relative h-64 md:h-[500px] w-full flex items-center justify-center">
@@ -120,6 +125,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Interactive Phone Modal */}
+      {showReveal && <InteractivePhoneReveal onClose={() => setShowReveal(false)} />}
 
       <div className="max-w-7xl mx-auto px-4 py-12 space-y-16">
         

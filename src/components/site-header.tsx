@@ -30,8 +30,10 @@ export function SiteHeader() {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const cartItemCount = useCartStore((state) => state.getItemCount())
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const updateUser = () => setUser(readUser())
     updateUser()
     
@@ -86,8 +88,13 @@ export function SiteHeader() {
           {/* Logo & Mobile Menu */}
           <div className="flex items-center gap-4 flex-shrink-0">
             <button 
-              className="lg:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-              onClick={() => setIsMobileMenuOpen(true)}
+              type="button"
+              className="lg:hidden relative z-[9999] p-3 -ml-3 text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-full shadow-sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsMobileMenuOpen(true);
+              }}
             >
               <Menu className="w-6 h-6" />
             </button>
@@ -160,10 +167,11 @@ export function SiteHeader() {
           {/* Actions */}
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             <button 
-              className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-full"
+              type="button"
+              className="lg:hidden relative z-50 p-2 text-slate-600 hover:bg-slate-100 rounded-full cursor-pointer"
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-5 h-5 pointer-events-none" />
             </button>
 
             <div className="hidden md:flex items-center gap-6 mr-2 text-sm font-medium text-slate-600">
@@ -236,7 +244,7 @@ export function SiteHeader() {
               onClick={() => setIsCartOpen(true)}
             >
               <ShoppingBag className="w-5 h-5 group-hover:text-blue-600 transition-colors" />
-              {cartItemCount > 0 && (
+              {mounted && cartItemCount > 0 && (
                 <span className="absolute top-0 right-0 transform translate-x-1 -translate-y-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
                   {cartItemCount > 99 ? '99+' : cartItemCount}
                 </span>
@@ -275,7 +283,7 @@ export function SiteHeader() {
       
       {/* Mobile Sidebar Menu */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
+        <div className="fixed inset-0 z-[9999] lg:hidden flex">
           {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
@@ -283,11 +291,11 @@ export function SiteHeader() {
           ></div>
           
           {/* Sidebar */}
-          <div className="relative w-4/5 max-w-sm bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-left duration-300 z-50">
+          <div className="relative w-4/5 max-w-sm bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-left duration-300 z-[10000]">
             <div className="p-4 border-b flex items-center justify-between">
               <span className="font-bold text-lg bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">TechStore</span>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors">
-                <X className="w-5 h-5" />
+              <button type="button" onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors">
+                <X className="w-5 h-5 pointer-events-none" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto py-4">
@@ -337,7 +345,7 @@ export function SiteHeader() {
         </div>
       )}
 
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      {mounted && <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />}
     </>
   )
 }
