@@ -19,6 +19,7 @@ interface ProductDetail {
   brand: string
   category: string
   image?: string
+  images?: string[]
   variants: Array<{
     id: string
     sku: string
@@ -45,6 +46,7 @@ export default function ProductDetailPage() {
   // Selection state
   const [selectedColor, setSelectedColor] = useState<string | null>(null)
   const [selectedMemory, setSelectedMemory] = useState<string | null>(null)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
   
   const [loading, setLoading] = useState(true)
@@ -52,6 +54,13 @@ export default function ProductDetailPage() {
   const [activeTab, setActiveTab] = useState<'specs' | 'desc' | 'reviews'>('specs')
 
   const { addItem } = useCartStore()
+
+  const galleryImages = useMemo(() => {
+    if (!product) return []
+    if (product.images && product.images.length > 0) return product.images
+    if (product.image) return [product.image]
+    return ['https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=800&auto=format&fit=crop&q=80']
+  }, [product])
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -183,23 +192,44 @@ export default function ProductDetailPage() {
             <div className="space-y-4">
               <div className="relative aspect-square rounded-2xl bg-slate-50 border border-slate-100 overflow-hidden group">
                 <img 
-                  src={product.image || 'https://placehold.co/800x800/png'} 
+                  src={selectedImage || product.image || 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=800&auto=format&fit=crop&q=80'} 
                   alt={product.name} 
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 origin-center cursor-zoom-in"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 origin-center cursor-zoom-in"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=800&auto=format&fit=crop&q=80'
+                  }}
                 />
                 {discountPct > 0 && (
-                  <div className="absolute top-4 left-4 bg-red-500 text-white font-bold px-3 py-1 rounded-full text-sm">
+                  <div className="absolute top-4 left-4 bg-red-500 text-white font-bold px-3 py-1 rounded-full text-sm shadow-md">
                     Giảm {discountPct}%
                   </div>
                 )}
               </div>
-              <div className="flex gap-4">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="w-20 h-20 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:border-blue-500 overflow-hidden">
-                    <img src={product.image || 'https://placehold.co/100x100/png'} alt="" className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
+
+              {/* Thumbnails Gallery */}
+              {galleryImages.length > 0 && (
+                <div className="flex gap-3 overflow-x-auto pb-1">
+                  {galleryImages.map((imgUrl, idx) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => setSelectedImage(imgUrl)}
+                      className={cn(
+                        "w-20 h-20 rounded-xl bg-slate-50 border-2 cursor-pointer overflow-hidden flex-shrink-0 transition-all",
+                        (selectedImage || product.image) === imgUrl ? "border-blue-600 ring-2 ring-blue-600/20" : "border-slate-200 hover:border-blue-400"
+                      )}
+                    >
+                      <img 
+                        src={imgUrl} 
+                        alt={`${product.name} ${idx + 1}`} 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=200&auto=format&fit=crop&q=80'
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Right: Info */}
